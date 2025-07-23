@@ -14,7 +14,7 @@ st.info(f"Python version: {sys.version}")
 @st.cache_resource
 def load_model():
     try:
-        model = YOLO("weights/bottle_neck.pt")
+        model = YOLO("Weights//3000_best_60single.pt")
         st.success("Model loaded successfully!")
         return model
     except Exception as e:
