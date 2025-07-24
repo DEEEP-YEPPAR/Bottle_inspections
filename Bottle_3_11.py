@@ -1,11 +1,29 @@
-import streamlit as st
-import cv2
-import tempfile
-from ultralytics import YOLO
-import numpy as np
-import os
 import sys
+import os
+import streamlit as st
+import tempfile
+import numpy as np
+from ultralytics import YOLO
 import torch
+
+# Check if we're in a headless environment
+HEADLESS = "DISPLAY" not in os.environ
+
+try:
+    if HEADLESS:
+        # Use headless version of OpenCV
+        import cv2
+        from cv2 import cv2
+    else:
+        import cv2
+except ImportError:
+    st.error("OpenCV not installed. Trying to fallback to headless version.")
+    try:
+        import cv2
+        from cv2 import cv2
+    except ImportError as e:
+        st.error(f"Critical Error: OpenCV could not be loaded. {e}")
+        st.stop()
 
 # Verify environment versions
 st.info(f"OpenCV version: {cv2.__version__}")
@@ -17,7 +35,14 @@ st.info(f"PyTorch version: {torch.__version__}")
 def load_model():
     try:
         # Proper YOLOv8 model loading for Python 3.11
-        model = YOLO("Weights/Weights/3000_best_60single.pt")
+        model_path = "Weights/Weights/3000_best_60single.pt"
+        
+        # Verify model path exists
+        if not os.path.exists(model_path):
+            st.error(f"Model file not found at: {os.path.abspath(model_path)}")
+            return None
+            
+        model = YOLO(model_path)
         st.success("Model loaded successfully!")
         return model
     except Exception as e:
@@ -46,15 +71,19 @@ if input_source == "Upload Video":
     if uploaded_file:
         tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
         tfile.write(uploaded_file.read())
+        tfile.close()  # Close the file so OpenCV can access it
         cap = cv2.VideoCapture(tfile.name)
         st.info(f"Loaded video: {uploaded_file.name}")
 
 elif input_source == "Webcam":
     if st.button("Start Webcam"):
         cap = cv2.VideoCapture(0)  # Default webcam
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        st.info("Webcam started. Press 'Stop Processing' to end.")
+        if not cap.isOpened():
+            st.error("Could not open webcam")
+        else:
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+            st.info("Webcam started. Press 'Stop Processing' to end.")
 
 # Placeholder for video display
 frame_placeholder = st.empty()
@@ -147,7 +176,7 @@ if cap and cap.isOpened():
         
         # Prepare frame for Streamlit
         try:
-            # Display frame with correct color conversion
+            # Convert BGR to RGB for proper display
             display_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame_placeholder.image(display_frame, use_column_width=True)
         except Exception as e:
@@ -159,7 +188,7 @@ if cap and cap.isOpened():
     except:
         pass
     
-    if tfile:
+    if tfile and os.path.exists(tfile.name):
         try:
             os.unlink(tfile.name)
         except:
