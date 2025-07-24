@@ -11,15 +11,33 @@ st.info(f"OpenCV version: {cv2.__version__}")
 st.info(f"Python version: {sys.version}")
 
 # Initialize YOLO model
+# @st.cache_resource
+# def load_model():
+#     try:
+#         model = YOLO("Weights//Weights//3000_best_60single.pt")
+#         st.success("Model loaded successfully!")
+#         return model
+#     except Exception as e:
+#         st.error(f"Error loading model: {str(e)}")
+#         return None
 @st.cache_resource
 def load_model():
     try:
+        from torch.serialization import add_safe_globals
+        from ultralytics.nn.tasks import DetectionModel
+
+        # Add the YOLO DetectionModel to PyTorch's safe globals
+        add_safe_globals({'ultralytics.nn.tasks.DetectionModel': DetectionModel})
+
+        # Load the model
         model = YOLO("Weights//Weights//3000_best_60single.pt")
         st.success("Model loaded successfully!")
         return model
+
     except Exception as e:
         st.error(f"Error loading model: {str(e)}")
         return None
+        
 
 model = load_model()
 class_names = {0: 'defect', 1: 'bottle', 2: 'bottle_neck'}
