@@ -3,7 +3,7 @@ opencv-python-headless==4.9.0.80
 ultralytics==8.2.3
 streamlit==1.36.0
 numpy==1.26.4
-torch
+torch==2.3.1
 
 # streamlit
 # opencv-python-headless
