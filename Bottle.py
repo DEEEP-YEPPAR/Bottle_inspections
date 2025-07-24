@@ -16,34 +16,34 @@ st.info(f"OpenCV version: {cv2.__version__}")
 st.info(f"Python version: {sys.version}")
 
 # Initialize YOLO model
-# @st.cache_resource
-# def load_model():
-#     try:
-#         model = YOLO("Weights//Weights//3000_best_60single.pt")
-#         st.success("Model loaded successfully!")
-#         return model
-#     except Exception as e:
-#         st.error(f"Error loading model: {str(e)}")
-#         return None
 @st.cache_resource
 def load_model():
-    import torch
-    from packaging import version
-
     try:
-        if version.parse(torch.__version__) >= version.parse("2.6"):
-            from torch.serialization import add_safe_globals
-            from ultralytics.nn.tasks import DetectionModel
-            add_safe_globals({'ultralytics.nn.tasks.DetectionModel': DetectionModel})
-
-        # Load YOLO model (this works with both old and new PyTorch)
         model = YOLO("Weights//Weights//3000_best_60single.pt")
         st.success("Model loaded successfully!")
         return model
-
     except Exception as e:
         st.error(f"Error loading model: {str(e)}")
         return None
+# @st.cache_resource
+# def load_model():
+#     import torch
+#     from packaging import version
+
+#     try:
+#         if version.parse(torch.__version__) >= version.parse("2.6"):
+#             from torch.serialization import add_safe_globals
+#             from ultralytics.nn.tasks import DetectionModel
+#             add_safe_globals({'ultralytics.nn.tasks.DetectionModel': DetectionModel})
+
+#         # Load YOLO model (this works with both old and new PyTorch)
+#         model = YOLO("Weights//Weights//3000_best_60single.pt")
+#         st.success("Model loaded successfully!")
+#         return model
+
+#     except Exception as e:
+#         st.error(f"Error loading model: {str(e)}")
+#         return None
 
         
 
