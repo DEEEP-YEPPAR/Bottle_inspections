@@ -28,23 +28,19 @@ st.info(f"Python version: {sys.version}")
 @st.cache_resource
 def load_model():
     import torch
-    from torch.serialization import add_safe_globals
-    from ultralytics.nn.tasks import DetectionModel
-    from ultralytics.nn.autobackend import AutoBackend  # Optional for model wrapping
+    from packaging import version
 
     try:
-        # Allow the DetectionModel class to be loaded safely
-        add_safe_globals({'ultralytics.nn.tasks.DetectionModel': DetectionModel})
+        if version.parse(torch.__version__) >= version.parse("2.6"):
+            from torch.serialization import add_safe_globals
+            from ultralytics.nn.tasks import DetectionModel
+            add_safe_globals({'ultralytics.nn.tasks.DetectionModel': DetectionModel})
 
-        # Load model checkpoint (with full object)
-        ckpt_path = "Weights//Weights//3000_best_60single.pt"
-        model_obj = torch.load(ckpt_path, weights_only=False)  # this is the actual model object
-
-        # Initialize YOLO using the loaded model object
-        model = YOLO(model=model_obj)
-
+        # Load YOLO model (this works with both old and new PyTorch)
+        model = YOLO("Weights//Weights//3000_best_60single.pt")
         st.success("Model loaded successfully!")
         return model
+
     except Exception as e:
         st.error(f"Error loading model: {str(e)}")
         return None
