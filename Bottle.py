@@ -8,6 +8,8 @@ from ultralytics import YOLO
 import numpy as np
 import os
 import sys
+import torch
+
 
 # Verify OpenCV installation
 st.info(f"OpenCV version: {cv2.__version__}")
